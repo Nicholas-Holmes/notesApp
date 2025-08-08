@@ -114,6 +114,7 @@ public class ButtonPanel extends JPanel{
                 LoginResponseDto loginResponse = gson.fromJson(responseBody,LoginResponseDto.class);
                 System.out.println("Logged in");
                 System.out.println("Id: " + loginResponse.getId() + " " + loginResponse.getUsername());
+                System.out.println("Token: " + loginResponse.getToken());
                 SwingUtilities.invokeLater(() -> {
                     parent.add(new NotesPanel(loginResponse.getId(),parent),"NotesPanel");
                     cl.show(parent,"NotesPanel");
