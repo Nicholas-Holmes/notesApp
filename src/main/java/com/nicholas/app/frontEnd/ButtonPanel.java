@@ -127,7 +127,7 @@ public class ButtonPanel extends JPanel{
             }
             con.disconnect();
         }catch (Exception e){
-            System.out.println(e.getStackTrace());
+            e.printStackTrace();
         }
     }
 }
