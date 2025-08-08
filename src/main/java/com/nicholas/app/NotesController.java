@@ -1,0 +1,37 @@
+package com.nicholas.app; 
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List; 
+@RestController
+@RequestMapping("/api/notes")
+public class NotesController {
+    @Autowired
+    NotesService notesService;
+
+    @GetMapping("/getNotes")
+    public ResponseEntity<?> getNotes(@RequestParam Long userId){
+        List<Notes> notes = notesService.getNotes(userId);
+        List<NotesDto> responseList = notes.stream().map(note -> 
+            new NotesDto(note.getId(),note.getNoteText(),note.getTitle())).collect(Collectors.toList());
+        return ResponseEntity.ok(responseList);
+    }
+    @PostMapping("/createNote")
+    public ResponseEntity<?> createNote(@RequestBody NotesDto note){
+        notesService.createNote(note.getId(),note.getTitle(),note.getText());
+        return ResponseEntity.ok("note Saved");
+    }
+    @PutMapping("/updateNote")
+    public ResponseEntity<?> updateNote(@RequestBody NotesDto note){
+        notesService.updateNote(note.getText(),note.getId());
+        return ResponseEntity.ok("Note updated");
+    }
+    @DeleteMapping("/deleteNote/{id}")
+    public ResponseEntity<?> deleteNote(@PathVariable Long id){
+        notesService.deleteNote(id);
+        return ResponseEntity.noContent().build();
+    }
+}
