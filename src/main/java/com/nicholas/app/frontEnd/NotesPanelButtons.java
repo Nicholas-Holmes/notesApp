@@ -16,9 +16,9 @@ public class NotesPanelButtons extends JPanel{
     private NotesListPanel notesList;
     private JPanel container;
     private NotesPanel parent;
-    public NotesPanelButtons(NotesListPanel notesList, JTextArea textArea,JPanel container,NotesPanel parent){
+    public NotesPanelButtons(LoginResponseDto response,NotesListPanel notesList, JTextArea textArea,JPanel container,NotesPanel parent){
        this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
-       this.dialogBox = new NotesDialog(this,notesList);
+       this.dialogBox = new NotesDialog(this,notesList,response );
        this.notesList = notesList;
        this.container = container;
        this.parent = parent;
@@ -64,7 +64,7 @@ public class NotesPanelButtons extends JPanel{
             if (responseCode == 200){
                 System.out.println("Success");
                 notesList.populateList();
-                
+
                 
             } else {
                 System.out.println("something went wrong");

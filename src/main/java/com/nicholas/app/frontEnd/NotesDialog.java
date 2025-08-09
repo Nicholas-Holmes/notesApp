@@ -10,7 +10,7 @@ public class NotesDialog extends JDialog{
     private JTextField title;
     private JButton ok;
     private Gson gson;
-    public NotesDialog(JPanel parent, NotesListPanel notesList){
+    public NotesDialog(JPanel parent, NotesListPanel notesList, LoginResponseDto response){
         this.gson = new Gson();
         this.setLayout(new BorderLayout());
         this.title = new JTextField(15);
@@ -20,7 +20,7 @@ public class NotesDialog extends JDialog{
         inputPanel.add(title);
         ok.addActionListener(e -> {
             String title = this.title.getText();
-            createNote(notesList.getUserId(),title,notesList);
+            createNote(response.getId(),title,notesList);
             this.title.setText("");
             dispose();
 

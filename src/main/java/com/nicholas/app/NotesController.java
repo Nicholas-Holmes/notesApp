@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List; 
 @RestController
@@ -13,8 +14,10 @@ public class NotesController {
     NotesService notesService;
 
     @GetMapping("/getNotes")
-    public ResponseEntity<?> getNotes(@RequestParam Long userId){
-        List<Notes> notes = notesService.getNotes(userId);
+    public ResponseEntity<?> getNotes(Authentication authentication){
+
+        var userDetails = (CustomUserDetails) authentication.getPrincipal();
+        List<Notes> notes = notesService.getNotes(userDetails.getId());
         List<NotesDto> responseList = notes.stream().map(note -> 
             new NotesDto(note.getId(),note.getNoteText(),note.getTitle())).collect(Collectors.toList());
         return ResponseEntity.ok(responseList);

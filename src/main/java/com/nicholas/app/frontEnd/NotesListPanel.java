@@ -15,15 +15,15 @@ import java.lang.reflect.Type;
 public class NotesListPanel extends JPanel{
     private JScrollPane pane;
     private JList<NotesResponseDto> list;
-    private Long userId;
+    private LoginResponseDto response;
     private Gson gson;
     private String title = "";
     private Long noteId = 0L;
     private JTextArea textArea;
 
-    public NotesListPanel(Long Id){
+    public NotesListPanel(LoginResponseDto response){
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.userId = Id;
+        this.response = response;
         this.list = new JList<>(new NotesResponseDto[0]);
         list.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()){
@@ -44,9 +44,10 @@ public class NotesListPanel extends JPanel{
     public void populateList(){
         new Thread(() -> {
             try{
-                URL url = new URL("http://localhost:9090/api/notes/getNotes?userId="+userId); 
+                URL url = new URL("http://localhost:9090/api/notes/getNotes"); 
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");
+                con.setRequestProperty("Authorization","Bearer " + response.getToken());
                 int responseCode = con.getResponseCode();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String responseBody = reader.lines().collect(Collectors.joining("\n"));
@@ -61,9 +62,6 @@ public class NotesListPanel extends JPanel{
                 System.out.println(e.getStackTrace()); 
             }
         }).start();
-    }
-    public long getUserId(){
-        return this.userId;
     }
     public long getNoteId(){
         return this.noteId;

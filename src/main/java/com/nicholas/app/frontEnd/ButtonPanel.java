@@ -116,7 +116,7 @@ public class ButtonPanel extends JPanel{
                 System.out.println("Id: " + loginResponse.getId() + " " + loginResponse.getUsername());
                 System.out.println("Token: " + loginResponse.getToken());
                 SwingUtilities.invokeLater(() -> {
-                    parent.add(new NotesPanel(loginResponse.getId(),parent),"NotesPanel");
+                    parent.add(new NotesPanel(loginResponse,parent),"NotesPanel");
                     cl.show(parent,"NotesPanel");
                     this.password.setText("");
                 });
