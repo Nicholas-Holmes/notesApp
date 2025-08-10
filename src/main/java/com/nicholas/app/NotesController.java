@@ -23,8 +23,9 @@ public class NotesController {
         return ResponseEntity.ok(responseList);
     }
     @PostMapping("/createNote")
-    public ResponseEntity<?> createNote(@RequestBody NotesDto note){
-        notesService.createNote(note.getId(),note.getTitle(),note.getText());
+    public ResponseEntity<?> createNote(@RequestBody NotesDto note,Authentication authentication){
+        var userDetails = (CustomUserDetails) authentication.getPrincipal();
+        notesService.createNote(userDetails.getId(),note.getTitle(),note.getText());
         return ResponseEntity.ok("note Saved");
     }
     @PutMapping("/updateNote")
