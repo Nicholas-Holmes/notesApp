@@ -10,11 +10,13 @@ public class NotesDialog extends JDialog{
     private JTextField title;
     private JButton ok;
     private Gson gson;
+    private LoginResponseDto response;
     public NotesDialog(JPanel parent, NotesListPanel notesList, LoginResponseDto response){
         this.gson = new Gson();
         this.setLayout(new BorderLayout());
         this.title = new JTextField(15);
         this.ok = new JButton("Ok");
+        this.response = response;
         JPanel inputPanel = new JPanel(new GridLayout(2,2,5,5));
         inputPanel.add(new JLabel("Title:"));
         inputPanel.add(title);
@@ -36,6 +38,7 @@ public class NotesDialog extends JDialog{
                 URL url = new URL("http://localhost:9090/api/notes/createNote");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
                 conn.setRequestMethod("POST");
+                conn.setRequestProperty("Authorization","Bearer "+ response.getToken());
                 conn.setRequestProperty("Content-Type","application/json; utf-8");
                 conn.setDoOutput(true);
                 NotesResponseDto note = new NotesResponseDto(id,"",title);
@@ -52,7 +55,7 @@ public class NotesDialog extends JDialog{
                 conn.disconnect();
                 notesList.populateList();
             } catch(Exception e){
-                System.out.println(e.getStackTrace());
+                e.printStackTrace();
             }
         }).start();
     }
