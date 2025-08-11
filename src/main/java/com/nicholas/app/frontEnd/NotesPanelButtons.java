@@ -1,4 +1,5 @@
 package com.nicholas.app.frontEnd; 
+import java.util.Optional;
 import com.nicholas.app.HttpRequestUtility;
 import java.net.URL;
 import java.net.HttpURLConnection;
@@ -54,24 +55,10 @@ public class NotesPanelButtons extends JPanel{
         NotesResponseDto requestBody = new NotesResponseDto(id,text,title);
         HttpRequestUtility.HttpPutRequest("http://localhost:9090/api/notes/updateNote",response.getToken(),requestBody);
     }
-    
-    private void deleteNote(long id){
-        try{
-            URL url = new URL("http://localhost:9090/api/notes/deleteNote/"+id);
-            var conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("DELETE");
-            conn.setRequestProperty("Authorization", "Bearer " + response.getToken());
-            int responseCode = conn.getResponseCode();
-            if (responseCode != 204){
-                System.out.println("something went wrong");
-            } else {
-                notesList.populateList();
-            }
-            conn.disconnect();
 
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+    private void deleteNote(long id){
+        HttpRequestUtility.HttpDeleteRequest(Optional.of(notesList),"http://localhost:9090/api/notes/deleteNote/"+id, 
+                                            response.getToken());
     }
     private void logout(){
         CardLayout cl = (CardLayout) container.getLayout();
