@@ -1,8 +1,12 @@
 package com.nicholas.app; 
+import java.util.function.Consumer;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
+import com.nicholas.app.frontEnd.NotesListPanel;
+
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.io.OutputStream;
@@ -18,7 +22,6 @@ public class HttpRequestUtility{
             URL url = new URL(stringUrl); 
             var conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("PUT");
-            conn.setRequestMethod("PUT");
             conn.setRequestProperty("Authorization", "Bearer " + token);
             conn.setRequestProperty("Content-Type","application/json; utf-8");
             conn.setDoOutput(true);           
@@ -29,13 +32,13 @@ public class HttpRequestUtility{
             int responseCode = conn.getResponseCode();
             InputStream is = responseCode == 200 ? conn.getInputStream():conn.getErrorStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String responseBody = reader.lines().collect(Collectors.joining("/n"));
+            String responseBody = reader.lines().collect(Collectors.joining("\n"));
             reader.close();
             
             if (responseCode == 200){
                 System.out.println(responseBody);
             } else {
-                Type type = new TypeToken<Map<String,String>>(){}.getClass();
+                Type type = new TypeToken<Map<String,String>>(){}.getType();
                 Map<String,String> errorMap = gson.fromJson(responseBody,type);
                 System.out.println(errorMap.get("error"));
             }
@@ -44,4 +47,32 @@ public class HttpRequestUtility{
             e.printStackTrace();
         }
     }
+    public static void HttpDeleteRequest(Optional<NotesListPanel> optArg,String StringUrl,String token){
+        try{
+            URL url = new URL(StringUrl);
+            var conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("DELETE");
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int responseCode = conn.getResponseCode();
+            System.out.println(responseCode);
+            if (responseCode >= 399){
+                InputStream is = conn.getErrorStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                String response = reader.lines().collect(Collectors.joining("\n"));
+                reader.close();
+                Type type = new TypeToken<Map<String,String>>(){}.getType();
+                Map<String,String> errorMap = gson.fromJson(response,type);
+                System.out.println(errorMap.get("error"));
+            } else {
+                System.out.println("Note Deleted");
+                optArg.ifPresent(listPanel -> listPanel.populateList());
+            }
+            conn.disconnect();
+                
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
 }

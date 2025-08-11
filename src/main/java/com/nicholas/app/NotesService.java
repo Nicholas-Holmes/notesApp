@@ -1,6 +1,7 @@
 package com.nicholas.app; 
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,11 +41,15 @@ public class NotesService {
         }
     }
     @Transactional
-    public void deleteNote(long id){
-        Optional<Notes> optNote = notesRepository.findById(id);
+    public void deleteNote(long NoteId, long userId){
+        Optional<Notes> optNote = notesRepository.findById(NoteId);
         if (!optNote.isEmpty()){
             Notes note = optNote.get();
-            notesRepository.delete(note);
+            if (note.getUser().getId() == userId){
+                notesRepository.delete(note);
+            } else {
+                throw new AccessDeniedException("Note does not belong to you");
+            }
         } else {
             throw new NoteNotFoundException("Note not found");
         }

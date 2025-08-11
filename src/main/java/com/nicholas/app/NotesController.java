@@ -34,8 +34,9 @@ public class NotesController {
         return ResponseEntity.ok("Note updated");
     }
     @DeleteMapping("/deleteNote/{id}")
-    public ResponseEntity<?> deleteNote(@PathVariable Long id){
-        notesService.deleteNote(id);
+    public ResponseEntity<?> deleteNote(@PathVariable Long id,Authentication authentication){
+        var userDetails = (CustomUserDetails) authentication.getPrincipal();
+        notesService.deleteNote(id,userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 }
