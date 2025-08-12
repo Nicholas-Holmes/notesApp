@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.nicholas.app.HttpRequestUtility;
+
 import java.lang.reflect.Type;
 
 public class NotesListPanel extends JPanel{
@@ -44,6 +46,10 @@ public class NotesListPanel extends JPanel{
     public void populateList(){
         new Thread(() -> {
             try{
+                Type type = new TypeToken<List<NotesResponseDto>>(){}.getType();
+                NotesResponseDto responseList = 
+                    HttpRequestUtility.httpGetRequest("http://localhost:9090/api/notes/getNotes",type);
+                    
                 URL url = new URL("http://localhost:9090/api/notes/getNotes"); 
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");

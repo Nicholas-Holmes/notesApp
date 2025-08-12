@@ -4,7 +4,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotesResponseDto{
+public class NotesResponseDto extends ErrorHolder{
     private long id;
 
     private String text;
