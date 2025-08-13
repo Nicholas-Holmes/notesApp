@@ -47,23 +47,15 @@ public class NotesListPanel extends JPanel{
         new Thread(() -> {
             try{
                 Type type = new TypeToken<List<NotesResponseDto>>(){}.getType();
-                NotesResponseDto responseList = 
-                    HttpRequestUtility.httpGetRequest("http://localhost:9090/api/notes/getNotes",type);
+                List<NotesResponseDto> responseList = 
+                    HttpRequestUtility.httpGetRequest("http://localhost:9090/api/notes/getNotes",type,response.getToken());
+                if (responseList != null){
                     
-                URL url = new URL("http://localhost:9090/api/notes/getNotes"); 
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("GET");
-                con.setRequestProperty("Authorization","Bearer " + response.getToken());
-                int responseCode = con.getResponseCode();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                String responseBody = reader.lines().collect(Collectors.joining("\n"));
-                reader.close();
-                if (responseCode == 200){
-                    Type type = new TypeToken<List<NotesResponseDto>>(){}.getType(); 
-                    List<NotesResponseDto> notes = gson.fromJson(responseBody,type);
-                    SwingUtilities.invokeLater(() -> list.setListData(notes.toArray(new NotesResponseDto[0])));
-                }
-                con.disconnect();
+                    SwingUtilities.invokeLater(() -> list.setListData(responseList.toArray(new NotesResponseDto[0])));
+                } else {
+                    System.out.println("error occured");
+                } 
+                
             } catch (Exception e){
                 System.out.println(e.getStackTrace()); 
             }

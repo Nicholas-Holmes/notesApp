@@ -15,7 +15,6 @@ public class NotesController {
 
     @GetMapping("/getNotes")
     public ResponseEntity<?> getNotes(Authentication authentication){
-
         var userDetails = (CustomUserDetails) authentication.getPrincipal();
         List<Notes> notes = notesService.getNotes(userDetails.getId());
         List<NotesDto> responseList = notes.stream().map(note -> 
