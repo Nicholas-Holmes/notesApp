@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
-import com.nicholas.app.frontEnd.ErrorHolder;
 import com.nicholas.app.frontEnd.NotesListPanel;
 
 import java.net.URL;
@@ -76,11 +75,12 @@ public class HttpRequestUtility{
         }
     }
 
-    public static <T extends ErrorHolder> T httpGetRequest(String StringUrl, Type responseObject){
+    public static <T> T httpGetRequest(String StringUrl, Type responseObject,String token){
         try{
             URL url = new URL(StringUrl);
             var conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization","Bearer " + token);
             int responseCode = conn.getResponseCode();
             InputStream is = responseCode == 200 ? conn.getInputStream():conn.getErrorStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
