@@ -1,5 +1,7 @@
 package com.nicholas.app; 
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -16,10 +18,13 @@ public class NotesService {
     NotesRepository notesRepository; 
 
     @Transactional(readOnly = true)
-    public List<Notes> getNotes(Long id){
+    public NotesDto getNotes(Long id){
         List<Notes> notes = notesRepository.findByUser_Id(id);
-        return notes; 
+        List<NotesDto> responseList = notes.stream().map(note -> 
+            new NotesDto(note.getId(),note.getNoteText(),note.getTitle(),null)).collect(Collectors.toList());
+        return new NotesDto(0,"","",responseList); 
     }
+
     @Transactional
     public void createNote(long id,String title, String text ){
         User user = new User();
@@ -30,6 +35,7 @@ public class NotesService {
         note.setNoteText(text);
         notesRepository.save(note); 
     }
+
     @Transactional
     public void updateNote(String text,long id){
         Optional<Notes> optNote = notesRepository.findById(id);
@@ -40,6 +46,7 @@ public class NotesService {
             throw new NoteNotFoundException("Note not found");
         }
     }
+
     @Transactional
     public void deleteNote(long NoteId, long userId){
         Optional<Notes> optNote = notesRepository.findById(NoteId);

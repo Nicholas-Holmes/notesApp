@@ -16,26 +16,28 @@ public class NotesController {
     @GetMapping("/getNotes")
     public ResponseEntity<?> getNotes(Authentication authentication){
         var userDetails = (CustomUserDetails) authentication.getPrincipal();
-        List<Notes> notes = notesService.getNotes(userDetails.getId());
-        List<NotesDto> responseList = notes.stream().map(note -> 
-            new NotesDto(note.getId(),note.getNoteText(),note.getTitle())).collect(Collectors.toList());
-        return ResponseEntity.ok(responseList);
+        NotesDto notes = notesService.getNotes(userDetails.getId());
+        return ResponseEntity.ok(notes);
     }
+
     @PostMapping("/createNote")
     public ResponseEntity<?> createNote(@RequestBody NotesDto note,Authentication authentication){
         var userDetails = (CustomUserDetails) authentication.getPrincipal();
         notesService.createNote(userDetails.getId(),note.getTitle(),note.getText());
         return ResponseEntity.ok("note Saved");
     }
+
     @PutMapping("/updateNote")
     public ResponseEntity<?> updateNote(@RequestBody NotesDto note){
         notesService.updateNote(note.getText(),note.getId());
         return ResponseEntity.ok("Note updated");
     }
+
     @DeleteMapping("/deleteNote/{id}")
     public ResponseEntity<?> deleteNote(@PathVariable Long id,Authentication authentication){
         var userDetails = (CustomUserDetails) authentication.getPrincipal();
         notesService.deleteNote(id,userDetails.getId());
         return ResponseEntity.noContent().build();
     }
+
 }
