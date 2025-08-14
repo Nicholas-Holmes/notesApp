@@ -47,7 +47,7 @@ public class HttpRequestUtility{
             e.printStackTrace();
         }
     }
-    public static void HttpDeleteRequest(Optional<NotesListPanel> optArg,String StringUrl,String token){
+    public static void HttpDeleteRequest(String StringUrl,String token){
         try{
             URL url = new URL(StringUrl);
             var conn = (HttpURLConnection) url.openConnection();
@@ -65,7 +65,6 @@ public class HttpRequestUtility{
                 System.out.println(errorMap.get("error"));
             } else {
                 System.out.println("Note Deleted");
-                optArg.ifPresent(listPanel -> listPanel.populateList());
             }
             conn.disconnect();
                 
@@ -75,7 +74,7 @@ public class HttpRequestUtility{
         }
     }
 
-    public static <T> T httpGetRequest(String StringUrl, Type responseObject,String token){
+    public static <T> Optional<T> httpGetRequest(String StringUrl, Type responseType, String token){
         try{
             URL url = new URL(StringUrl);
             var conn = (HttpURLConnection) url.openConnection();
@@ -86,11 +85,11 @@ public class HttpRequestUtility{
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String response = reader.lines().collect(Collectors.joining("\n"));
             reader.close();
-            return gson.fromJson(response,responseObject);
+            return Optional.of(gson.fromJson(response,responseType));
             
         } catch (Exception e){
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
 
     }

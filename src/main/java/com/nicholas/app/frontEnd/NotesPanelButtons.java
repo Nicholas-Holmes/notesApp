@@ -19,6 +19,8 @@ public class NotesPanelButtons extends JPanel{
     private JPanel container;
     private NotesPanel parent;
     private LoginResponseDto response;
+    private JTextArea textArea; 
+
     public NotesPanelButtons(LoginResponseDto response,NotesListPanel notesList, JTextArea textArea,JPanel container,NotesPanel parent){
        this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
        this.dialogBox = new NotesDialog(this,notesList,response );
@@ -26,6 +28,7 @@ public class NotesPanelButtons extends JPanel{
        this.container = container;
        this.parent = parent;
        this.response = response; 
+       this.textArea = textArea; 
        JButton create = new JButton("Create");
        JButton save = new JButton("Save");
        JButton delete = new JButton("Delete");
@@ -52,13 +55,17 @@ public class NotesPanelButtons extends JPanel{
     }
 
     private void updateNote(long id, String title,String text){
-        NotesResponseDto requestBody = new NotesResponseDto(id,text,title);
+        NotesResponseDto requestBody = new NotesResponseDto(id,text,title,null);
         HttpRequestUtility.HttpPutRequest("http://localhost:9090/api/notes/updateNote",response.getToken(),requestBody);
+        notesList.populateList(); 
     }
 
     private void deleteNote(long id){
-        HttpRequestUtility.HttpDeleteRequest(Optional.of(notesList),"http://localhost:9090/api/notes/deleteNote/"+id, 
+        HttpRequestUtility.HttpDeleteRequest("http://localhost:9090/api/notes/deleteNote/"+id, 
                                             response.getToken());
+        notesList.populateList();
+        textArea.setText("");
+        
     }
     private void logout(){
         CardLayout cl = (CardLayout) container.getLayout();

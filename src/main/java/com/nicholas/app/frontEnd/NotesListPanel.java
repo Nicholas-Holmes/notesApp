@@ -1,6 +1,7 @@
 package com.nicholas.app.frontEnd;
 import javax.swing.*;
 import java.util.List;
+import java.util.Optional;
 import java.lang.Thread; 
 import java.net.HttpURLConnection;
 import java.net.URL; 
@@ -46,18 +47,18 @@ public class NotesListPanel extends JPanel{
     public void populateList(){
         new Thread(() -> {
             try{
-                Type type = new TypeToken<List<NotesResponseDto>>(){}.getType();
-                List<NotesResponseDto> responseList = 
+                Type type = new TypeToken<NotesResponseDto>(){}.getType();
+                Optional<NotesResponseDto> optResponseList = 
                     HttpRequestUtility.httpGetRequest("http://localhost:9090/api/notes/getNotes",type,response.getToken());
-                if (responseList != null){
-                    
-                    SwingUtilities.invokeLater(() -> list.setListData(responseList.toArray(new NotesResponseDto[0])));
+                if (!optResponseList.isEmpty() ){
+                    NotesResponseDto responseList = optResponseList.get();
+                    SwingUtilities.invokeLater(() -> list.setListData(responseList.getNotesList().toArray(new NotesResponseDto[0])));
                 } else {
                     System.out.println("error occured");
                 } 
                 
             } catch (Exception e){
-                System.out.println(e.getStackTrace()); 
+                e.printStackTrace();
             }
         }).start();
     }

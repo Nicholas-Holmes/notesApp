@@ -41,7 +41,7 @@ public class NotesDialog extends JDialog{
                 conn.setRequestProperty("Authorization","Bearer "+ response.getToken());
                 conn.setRequestProperty("Content-Type","application/json; utf-8");
                 conn.setDoOutput(true);
-                NotesResponseDto note = new NotesResponseDto(id,"",title);
+                NotesResponseDto note = new NotesResponseDto(id,"",title,null);
                 String json = gson.toJson(note);
                 try(OutputStream os = conn.getOutputStream()){
                     os.write(json.getBytes());
