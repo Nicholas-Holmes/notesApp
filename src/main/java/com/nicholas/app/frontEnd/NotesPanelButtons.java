@@ -1,4 +1,6 @@
 package com.nicholas.app.frontEnd; 
+import java.util.Optional;
+import com.nicholas.app.HttpRequestUtility;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.io.OutputStream;
@@ -16,12 +18,17 @@ public class NotesPanelButtons extends JPanel{
     private NotesListPanel notesList;
     private JPanel container;
     private NotesPanel parent;
-    public NotesPanelButtons(NotesListPanel notesList, JTextArea textArea,JPanel container,NotesPanel parent){
+    private LoginResponseDto response;
+    private JTextArea textArea; 
+
+    public NotesPanelButtons(LoginResponseDto response,NotesListPanel notesList, JTextArea textArea,JPanel container,NotesPanel parent){
        this.setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
-       this.dialogBox = new NotesDialog(this,notesList);
+       this.dialogBox = new NotesDialog(this,notesList,response );
        this.notesList = notesList;
        this.container = container;
        this.parent = parent;
+       this.response = response; 
+       this.textArea = textArea; 
        JButton create = new JButton("Create");
        JButton save = new JButton("Save");
        JButton delete = new JButton("Delete");
@@ -48,49 +55,17 @@ public class NotesPanelButtons extends JPanel{
     }
 
     private void updateNote(long id, String title,String text){
-        try{
-            URL url = new URL("http://localhost:9090/api/notes/updateNote");
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-            conn.setRequestMethod("PUT");
-            conn.setRequestProperty("Content-Type","application/json; utf-8");
-            conn.setDoOutput(true);
-            NotesResponseDto note = new NotesResponseDto(id,text,title);
-            String json = gson.toJson(note);
-            try(OutputStream os = conn.getOutputStream()){
-                os.write(json.getBytes());
-            }
-
-            int responseCode = conn.getResponseCode();
-            if (responseCode == 200){
-                System.out.println("Success");
-                notesList.populateList();
-                
-                
-            } else {
-                System.out.println("something went wrong");
-            }
-            conn.disconnect();
-
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        NotesResponseDto requestBody = new NotesResponseDto(id,text,title,null);
+        HttpRequestUtility.HttpPutRequest("http://localhost:9090/api/notes/updateNote",response.getToken(),requestBody);
+        notesList.populateList(); 
     }
-    private void deleteNote(long id){
-        try{
-            URL url = new URL("http://localhost:9090/api/notes/deleteNote/"+id);
-            var conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("DELETE");
-            int responseCode = conn.getResponseCode();
-            if (responseCode != 204){
-                System.out.println("something went wrong");
-            } else {
-                notesList.populateList();
-            }
-            conn.disconnect();
 
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+    private void deleteNote(long id){
+        HttpRequestUtility.HttpDeleteRequest("http://localhost:9090/api/notes/deleteNote/"+id, 
+                                            response.getToken());
+        notesList.populateList();
+        textArea.setText("");
+        
     }
     private void logout(){
         CardLayout cl = (CardLayout) container.getLayout();

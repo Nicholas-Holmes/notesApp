@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.Optional;
 import java.lang.reflect.Type;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
@@ -15,6 +16,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent; 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.nicholas.app.HttpRequestUtility;
+import com.nicholas.app.UserDto;
 
 public class ButtonPanel extends JPanel{
     private TextFieldPanel username;
@@ -93,41 +96,22 @@ public class ButtonPanel extends JPanel{
     }
 
     public void login(){
-        try{ 
-            String username = this.username.getText();
-            String password = new String(this.password.getText());
-            String jsonInputString = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
-            URL url = new URL("http://localhost:9090/api/users/login");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type","application/json; utf-8");
-            con.setDoOutput(true);
-            try(OutputStream os = con.getOutputStream()){
-                os.write(jsonInputString.getBytes());
-            }
-            int responseCode = con.getResponseCode();
-            InputStream is = responseCode == 200 ? con.getInputStream():con.getErrorStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String responseBody = reader.lines().collect(Collectors.joining("\n"));
-            reader.close();
-            if (responseCode == 200){
-                LoginResponseDto loginResponse = gson.fromJson(responseBody,LoginResponseDto.class);
-                System.out.println("Logged in");
-                System.out.println("Id: " + loginResponse.getId() + " " + loginResponse.getUsername());
-                SwingUtilities.invokeLater(() -> {
-                    parent.add(new NotesPanel(loginResponse.getId(),parent),"NotesPanel");
-                    cl.show(parent,"NotesPanel");
-                    this.password.setText("");
-                });
+        UserDto requestBody = new UserDto(username.getText(),new String(password.getText()));
+        Type responseType = new TypeToken<LoginResponseDto>(){}.getType();
+        Optional<LoginResponseDto> optResponse = HttpRequestUtility.httpPostRequest("http://localhost:9090/api/users/login",requestBody,LoginResponseDto.class,Optional.empty());
+        if (!optResponse.isEmpty()){
+            LoginResponseDto response = optResponse.get();
+            if (response.getErrorMessage() == null){
+                System.out.println("Value was '' ");
+                parent.add(new NotesPanel(response,parent),"NotesPanel");
+                cl.show(parent,"NotesPanel");
+                this.password.setText("");
             } else {
-                Type type = new TypeToken<Map<String,String>>(){}.getType();
-                Map<String,String> errorMap = gson.fromJson(responseBody,type);
-                errorLabel.setText(errorMap.get("error"));
+                errorLabel.setText(response.getErrorMessage());
                 errorLabel.setVisible(true);
             }
-            con.disconnect();
-        }catch (Exception e){
-            System.out.println(e.getStackTrace());
+        } else {
+            System.out.println("error occured will add functionality to get error message on the frontend in due time");
         }
     }
 }
