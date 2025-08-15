@@ -1,6 +1,7 @@
 package com.nicholas.app.frontEnd;
 import javax.swing.*;
 import java.util.List;
+import java.util.Optional;
 import java.lang.Thread; 
 import java.net.HttpURLConnection;
 import java.net.URL; 
@@ -10,20 +11,22 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.nicholas.app.HttpRequestUtility;
+
 import java.lang.reflect.Type;
 
 public class NotesListPanel extends JPanel{
     private JScrollPane pane;
     private JList<NotesResponseDto> list;
-    private Long userId;
+    private LoginResponseDto response;
     private Gson gson;
     private String title = "";
     private Long noteId = 0L;
     private JTextArea textArea;
 
-    public NotesListPanel(Long Id){
+    public NotesListPanel(LoginResponseDto response){
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        this.userId = Id;
+        this.response = response;
         this.list = new JList<>(new NotesResponseDto[0]);
         list.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()){
@@ -44,26 +47,20 @@ public class NotesListPanel extends JPanel{
     public void populateList(){
         new Thread(() -> {
             try{
-                URL url = new URL("http://localhost:9090/api/notes/getNotes?userId="+userId); 
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("GET");
-                int responseCode = con.getResponseCode();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                String responseBody = reader.lines().collect(Collectors.joining("\n"));
-                reader.close();
-                if (responseCode == 200){
-                    Type type = new TypeToken<List<NotesResponseDto>>(){}.getType(); 
-                    List<NotesResponseDto> notes = gson.fromJson(responseBody,type);
-                    SwingUtilities.invokeLater(() -> list.setListData(notes.toArray(new NotesResponseDto[0])));
-                }
-                con.disconnect();
+                Type type = new TypeToken<NotesResponseDto>(){}.getType();
+                Optional<NotesResponseDto> optResponseList = 
+                    HttpRequestUtility.httpGetRequest("http://localhost:9090/api/notes/getNotes",type,response.getToken());
+                if (!optResponseList.isEmpty() ){
+                    NotesResponseDto responseList = optResponseList.get();
+                    SwingUtilities.invokeLater(() -> list.setListData(responseList.getNotesList().toArray(new NotesResponseDto[0])));
+                } else {
+                    System.out.println("error occured");
+                } 
+                
             } catch (Exception e){
-                System.out.println(e.getStackTrace()); 
+                e.printStackTrace();
             }
         }).start();
-    }
-    public long getUserId(){
-        return this.userId;
     }
     public long getNoteId(){
         return this.noteId;

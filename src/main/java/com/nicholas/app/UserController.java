@@ -22,7 +22,7 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody UserDto userDto){ 
         String username = userDto.getUsername();
         String password = userDto.getPassword();
-        User user = userService.login(username,password);
-        return ResponseEntity.ok(new LoginResponseDto(user.getId(),user.getUsername()));
+        LoginResponseDto loginResponse= userService.login(username,password);
+        return ResponseEntity.ok(loginResponse);
     }
 }

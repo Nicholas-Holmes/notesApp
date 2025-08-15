@@ -3,8 +3,10 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponseDto{
+public class LoginResponseDto extends ErrorHolder{
     private long id;
 
     private String username; 
+
+    private String token; 
 }
