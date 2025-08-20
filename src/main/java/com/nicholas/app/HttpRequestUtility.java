@@ -29,9 +29,7 @@ public class HttpRequestUtility{
             conn.setRequestProperty("Content-Type","application/json; utf-8");
             conn.setDoOutput(true);           
             String json = gson.toJson(requestBody);
-            try(OutputStream os = conn.getOutputStream()){
-                os.write(json.getBytes());
-            }
+            writeRequestBody(json,conn.getOutputStream());
             int responseCode = conn.getResponseCode();
             String responseBody = readResponse(conn,responseCode);
             if (responseCode == 200){
@@ -142,4 +140,15 @@ public class HttpRequestUtility{
             return "Unkown error occured";
         }
     }
+
+    private static void writeRequestBody(String json,OutputStream os){
+        try{
+            byte[] jsonByteArray = json.getBytes();
+            os.write(jsonByteArray);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
 }
