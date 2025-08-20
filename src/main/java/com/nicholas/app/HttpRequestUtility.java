@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 public class HttpRequestUtility{
     private static Gson gson = new Gson();
     private static final Type errorType = new TypeToken<Map<String,String>>(){}.getType();
+
     public static <T> void HttpPutRequest(String stringUrl,String token,T requestBody){
         try{
             URL url = new URL(stringUrl); 
@@ -32,17 +33,11 @@ public class HttpRequestUtility{
                 os.write(json.getBytes());
             }
             int responseCode = conn.getResponseCode();
-            InputStream is = responseCode == 200 ? conn.getInputStream():conn.getErrorStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String responseBody = reader.lines().collect(Collectors.joining("\n"));
-            reader.close();
-            
+            String responseBody = readResponse(conn,responseCode);
             if (responseCode == 200){
                 System.out.println(responseBody);
             } else {
-                Type type = new TypeToken<Map<String,String>>(){}.getType();
-                Map<String,String> errorMap = gson.fromJson(responseBody,type);
-                System.out.println(errorMap.get("error"));
+                System.out.println(parseError(responseBody));
             }
             conn.disconnect();
         } catch (Exception e){
@@ -84,10 +79,7 @@ public class HttpRequestUtility{
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization","Bearer " + token);
             int responseCode = conn.getResponseCode();
-            InputStream is = responseCode == 200 ? conn.getInputStream():conn.getErrorStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String response = reader.lines().collect(Collectors.joining("\n"));
-            reader.close();
+            String response = readResponse(conn,responseCode);
             return Optional.of(gson.fromJson(response,responseType));
             
         } catch (Exception e){
