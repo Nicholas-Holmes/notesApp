@@ -38,7 +38,7 @@ public class NotesDialog extends JDialog{
                 URL url = new URL("http://localhost:9090/api/notes/createNote");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
                 conn.setRequestMethod("POST");
-                conn.setRequestProperty("Authorization","Bearer "+ response.getToken());
+                conn.setRequestProperty("Authorization","Bearer "+ response.getAccessToken());
                 conn.setRequestProperty("Content-Type","application/json; utf-8");
                 conn.setDoOutput(true);
                 NotesResponseDto note = new NotesResponseDto(id,"",title,null);

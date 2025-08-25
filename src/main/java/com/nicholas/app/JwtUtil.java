@@ -17,26 +17,45 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final long EXPIRATION = 1000*60*60;
+    private static final long ACCESS_EXPIRATION = 1000*60*10;
+    private static final long REFRESH_EXPIRATION = 1000*60*60*72;
 
     private Key getSigningKey(){
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
     
-    public String generateToken(UserDetails userDetails){
+    public String generateAccessToken(UserDetails userDetails){
         Map<String,Object> claims = new HashMap<>();
+        claims.put("tokenType","accessToken");
         return createToken(claims, userDetails.getUsername());
+    }
+
+    public String generateRefreshToken(UserDetails userDetails){
+        Map<String,Object> claims = new HashMap<>();
+        claims.put("tokenType","refreshToken");
+        return createRefreshToken(claims,userDetails.getUsername());
+    }
+    
+    private String createRefreshToken(Map<String,Object> claims,String subject){
+        return Jwts.builder().setClaims(claims).setSubject(subject)
+        .setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis()+REFRESH_EXPIRATION))
+        .signWith(getSigningKey(),SignatureAlgorithm.HS256).compact();
+
     }
 
     private String createToken(Map<String,Object> claims,String subject){
         return Jwts.builder().setClaims(claims).setSubject(subject)
-        .setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis()+EXPIRATION))
+        .setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis()+ACCESS_EXPIRATION))
         .signWith(getSigningKey(),SignatureAlgorithm.HS256).compact();
     }
 
-    public boolean validateToken(String token, UserDetails userDetails){
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public boolean validateToken(String token, UserDetails userDetails){ 
+        final String username = extractUsername(token); 
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token)); 
+    }
+
+    public String extractTokenType(String token){
+        return extractClaim(token,Claims -> Claims.get("tokenType",String.class));
     }
 
     public String extractUsername(String token) {
