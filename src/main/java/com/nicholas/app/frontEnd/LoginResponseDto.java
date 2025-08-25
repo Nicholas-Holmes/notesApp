@@ -8,5 +8,29 @@ public class LoginResponseDto extends ErrorHolder{
 
     private String username; 
 
-    private String token; 
+    private String accessToken; 
+
+    private String refreshToken;
+
+    @Synchronized
+    public void setAccessToken(String token){
+        this.accessToken = token;
+    }
+    
+    @Synchronized
+    public String getAccessToken(){
+        return this.accessToken;
+    }
+    
+    @Synchronized
+    public void setRefreshToken(String token){
+        this.refreshToken = token;
+    }
+
+    @Synchronized
+    public String getRefreshToken(){
+        return this.refreshToken;
+    }
+
+
 }
