@@ -97,7 +97,6 @@ public class ButtonPanel extends JPanel{
 
     public void login(){
         UserDto requestBody = new UserDto(username.getText(),new String(password.getText()));
-        Type responseType = new TypeToken<LoginResponseDto>(){}.getType();
         Optional<LoginResponseDto> optResponse = HttpRequestUtility.httpPostRequest("http://localhost:9090/api/users/login",requestBody,LoginResponseDto.class,Optional.empty());
         if (!optResponse.isEmpty()){
             LoginResponseDto response = optResponse.get();
@@ -106,6 +105,7 @@ public class ButtonPanel extends JPanel{
                 parent.add(new NotesPanel(response,parent),"NotesPanel");
                 cl.show(parent,"NotesPanel");
                 this.password.setText("");
+                System.out.println(response.getAccessToken() + "\n" + response.getRefreshToken());
             } else {
                 errorLabel.setText(response.getErrorMessage());
                 errorLabel.setVisible(true);

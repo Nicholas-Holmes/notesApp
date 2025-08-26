@@ -3,6 +3,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nicholas.app.exception.DatabaseSaveException;
 import com.nicholas.app.exception.InvalidPasswordException;
+import com.nicholas.app.exception.InvalidTokenException;
+import com.nicholas.app.exception.UnexpectedTokenType;
 import com.nicholas.app.exception.UserNotFoundException;
 import com.nicholas.app.frontEnd.LoginResponseDto;
 
@@ -11,6 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 @Service
 public class UserService implements UserDetailsService{
@@ -46,8 +51,27 @@ public class UserService implements UserDetailsService{
             throw new InvalidPasswordException("Incorrect password");
         }
         var cud = (CustomUserDetails) loadUserByUsername(user.getUsername());
-        String token = jwtUtil.generateToken(cud);
-        return new LoginResponseDto(user.getId(),user.getUsername(),token);
+        String accessToken = jwtUtil.generateAccessToken(cud);
+        String refreshToken = jwtUtil.generateRefreshToken(cud);
+        return new LoginResponseDto(user.getId(),user.getUsername(),accessToken,refreshToken);
+    }
+
+    public Map<String,String> refreshTokens(String token){
+        String tokenType = jwtUtil.extractTokenType(token);
+        if(!tokenType.equals("refreshToken")){
+            throw new UnexpectedTokenType("Unexpected token type");
+        }
+        String username = jwtUtil.extractUsername(token);
+        UserDetails details = loadUserByUsername(username);
+        if(jwtUtil.validateToken(token,details)){
+            String newAccessToken = jwtUtil.generateAccessToken(details);
+            String newRefreshToken = jwtUtil.generateRefreshToken(details);
+            return Map.of("accessToken",newAccessToken,"refreshToken",newRefreshToken);
+            
+        } else {
+            throw new InvalidTokenException("Token is invalid");
+        }
+        
     }
 
     @Override 

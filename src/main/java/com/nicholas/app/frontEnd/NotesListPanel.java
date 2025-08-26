@@ -49,7 +49,7 @@ public class NotesListPanel extends JPanel{
             try{
                 Type type = new TypeToken<NotesResponseDto>(){}.getType();
                 Optional<NotesResponseDto> optResponseList = 
-                    HttpRequestUtility.httpGetRequest("http://localhost:9090/api/notes/getNotes",type,response.getToken());
+                    HttpRequestUtility.httpGetRequest("http://localhost:9090/api/notes/getNotes",type,response.getAccessToken());
                 if (!optResponseList.isEmpty() ){
                     NotesResponseDto responseList = optResponseList.get();
                     SwingUtilities.invokeLater(() -> list.setListData(responseList.getNotesList().toArray(new NotesResponseDto[0])));
