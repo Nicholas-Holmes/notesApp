@@ -30,5 +30,15 @@ public class GlobalExceptionHandler{
     public ResponseEntity<Map<String,String>> handleAccessDenied(AccessDeniedException e){
         return ResponseEntity.status(401).body(Map.of("error",e.getMessage()));
     }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<Map<String,String>> handleInvalidToken(InvalidTokenException e){
+        return ResponseEntity.status(401).body(Map.of("error",e.getMessage()));
+    }
+
+    @ExceptionHandler(UnexpectedTokenType.class)
+    public ResponseEntity<Map<String,String>> handleUnexpectedToken(UnexpectedTokenType e){
+        return ResponseEntity.status(401).body(Map.of("error",e.getMessage()));
+    }
     
 }
