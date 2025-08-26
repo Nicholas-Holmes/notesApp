@@ -126,8 +126,9 @@ public class HttpRequestUtility{
     private static String parseError(String requestResponse){
         Map<String,String> errorMap = gson.fromJson(requestResponse,errorType);
         return errorMap.get("error");
+    }
 
-    public static <T,R extends ErrorHolder> Optional<R> httpPostRequest(String StringUrl,Class<R> responseType,Optional<String> optToken){
+    public static <R extends ErrorHolder> Optional<R> httpPostRequest(String StringUrl,Class<R> responseType,Optional<String> optToken){
         try{
             URL url = new URL(StringUrl);
             var conn = (HttpURLConnection) url.openConnection();
