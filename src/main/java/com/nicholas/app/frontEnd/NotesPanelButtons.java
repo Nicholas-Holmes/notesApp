@@ -86,7 +86,7 @@ public class NotesPanelButtons extends JPanel{
     private void refreshTokens(){
         Runnable refresh = (() -> {
             Optional<TokenDto> optTokens = HttpRequestUtility.httpPostRequest("http://localhost:9090/api/users/refreshTokens",
-            TokenDto.class, Optional.of(response.getRefreshToken()));
+            TokenDto.class, response.getRefreshToken());
             if(!optTokens.isEmpty()){
                 TokenDto tokens = optTokens.get();
                 response.setAccessToken(tokens.getAccessToken());
