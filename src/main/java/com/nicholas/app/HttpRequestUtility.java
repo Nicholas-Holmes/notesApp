@@ -89,64 +89,11 @@ public class HttpRequestUtility{
 
     
     public static <T,R extends ErrorHolder> Optional<R> httpPostRequest(String StringUrl,T requestBody,Class<R> responseType,String token){
-        try{
-            URL url = new URL(StringUrl);
-            var conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization","Bearer " + token);
-            conn.setRequestProperty("Content-Type","application/json; utf-8");
-            conn.setDoOutput(true);
-            String json = gson.toJson(requestBody);
-
-            try(OutputStream os = conn.getOutputStream()){
-                os.write(json.getBytes());
-            }
-            int responseCode = conn.getResponseCode();
-            String response = readResponse(conn,responseCode);
-            conn.disconnect();
-
-            if(responseCode == 200){
-                return Optional.of(gson.fromJson(response,responseType));
-            } else {
-                R errorMessage = responseType.getDeclaredConstructor().newInstance();
-                errorMessage.setErrorMessage(parseError(response));
-                return Optional.of(errorMessage);
-            }
-            
-        }catch(Exception e){
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        return makePostRequest(StringUrl,requestBody,responseType,token);
     }
 
     public static <T,R extends ErrorHolder> Optional<R> httpPostRequest(String StringUrl,T requestBody,Class<R> responseType){
-        try{
-            URL url = new URL(StringUrl);
-            var conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type","application/json; utf-8");
-            conn.setDoOutput(true);
-            String json = gson.toJson(requestBody);
-
-            try(OutputStream os = conn.getOutputStream()){
-                os.write(json.getBytes());
-            }
-            int responseCode = conn.getResponseCode();
-            String response = readResponse(conn,responseCode);
-            conn.disconnect();
-
-            if(responseCode == 200){
-                return Optional.of(gson.fromJson(response,responseType));
-            } else {
-                R errorMessage = responseType.getDeclaredConstructor().newInstance();
-                errorMessage.setErrorMessage(parseError(response));
-                return Optional.of(errorMessage);
-            }
-            
-        }catch(Exception e){
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        return makePostRequest(StringUrl,requestBody,responseType,null);
     }
 
 
@@ -157,35 +104,7 @@ public class HttpRequestUtility{
     }
 
     public static <R extends ErrorHolder> Optional<R> httpPostRequest(String StringUrl,Class<R> responseType){
-        try{
-            URL url = new URL(StringUrl);
-            var conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type","application/json; utf-8");
-            conn.setDoOutput(true);
-     
-            int responseCode = conn.getResponseCode();
-            InputStream is = responseCode == 200 ? conn.getInputStream():conn.getErrorStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String response = reader.lines().collect(Collectors.joining("\n"));
-            reader.close();
-            conn.disconnect();
-
-            if(responseCode == 200){
-                return Optional.of(gson.fromJson(response,responseType));
-            } else {
-                Type type = new TypeToken<Map<String,String>>(){}.getType();
-                Map<String,String> errorMap = gson.fromJson(response,type);
-                R errorMessage = responseType.getDeclaredConstructor().newInstance();
-                errorMessage.setErrorMessage(errorMap.get("error"));
-                return Optional.of(errorMessage);
-            }
-            
-        }catch(Exception e){
-            e.printStackTrace();
-            return Optional.empty();
-        }
-
+        return makePostRequest(StringUrl,null,responseType,null);
     }
     
     private static String readResponse(HttpURLConnection conn, int responseCode){
@@ -203,37 +122,39 @@ public class HttpRequestUtility{
     }
     
     public static <R extends ErrorHolder> Optional<R> httpPostRequest(String StringUrl,Class<R> responseType,String token){
+        return makePostRequest(StringUrl,null,responseType,token);
+    }
+
+    private static <T,R extends ErrorHolder> Optional<R> makePostRequest(String stringUrl,T requestBody,Class<R> responseType,String token){
         try{
-            URL url = new URL(StringUrl);
+            URL url = new URL(stringUrl);
             var conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization","Bearer " + token);
-            
-            conn.setRequestProperty("Content-Type","application/json; utf-8");
-            conn.setDoOutput(true);
-     
+            if (token != null){
+               conn.setRequestProperty("Authorization","Bearer "+token); 
+            }
+            conn.setRequestProperty("Content-type","application/json; utf-8");
+            if(requestBody != null){
+                conn.setDoOutput(true);
+                String json = gson.toJson(requestBody);
+                writeRequestBody(json,conn.getOutputStream());
+            }
             int responseCode = conn.getResponseCode();
-            InputStream is = responseCode == 200 ? conn.getInputStream():conn.getErrorStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String response = reader.lines().collect(Collectors.joining("\n"));
-            reader.close();
+            String response = readResponse(conn,responseCode);
             conn.disconnect();
-
             if(responseCode == 200){
                 return Optional.of(gson.fromJson(response,responseType));
-            } else {
-                Type type = new TypeToken<Map<String,String>>(){}.getType();
-                Map<String,String> errorMap = gson.fromJson(response,type);
-                R errorMessage = responseType.getDeclaredConstructor().newInstance();
-                errorMessage.setErrorMessage(errorMap.get("error"));
-                return Optional.of(errorMessage);
+            }else{
+                String errorText = parseError(response);
+                R errorResponse = responseType.getDeclaredConstructor().newInstance();
+                errorResponse.setErrorMessage(errorText);
+                return Optional.of(errorResponse);
             }
-            
+
         }catch(Exception e){
             e.printStackTrace();
             return Optional.empty();
         }
-
     }
 
     private static void writeRequestBody(String json,OutputStream os){
