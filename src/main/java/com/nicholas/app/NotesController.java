@@ -24,7 +24,8 @@ public class NotesController {
     public ResponseEntity<?> createNote(@RequestBody NotesDto note,Authentication authentication){
         var userDetails = (CustomUserDetails) authentication.getPrincipal();
         notesService.createNote(userDetails.getId(),note.getTitle(),note.getText());
-        return ResponseEntity.ok("note Saved");
+        TextResponseDto textResponse = new TextResponseDto("note saved");
+        return ResponseEntity.ok(textResponse);
     }
 
     @PutMapping("/updateNote")

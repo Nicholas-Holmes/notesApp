@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nicholas.app.HttpRequestUtility;
+import com.nicholas.app.RegisterDto;
+import com.nicholas.app.RegisterResponseDto;
 import com.nicholas.app.UserDto;
 
 public class ButtonPanel extends JPanel{
@@ -65,31 +67,21 @@ public class ButtonPanel extends JPanel{
         try {
             String username = this.username.getText();
             String password = new String(this.password.getText());
-            
-            String jsonInputString = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
-            URL url = new URL("http://localhost:9090/api/users/register");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type","application/json; utf-8");
-            con.setDoOutput(true);
-            try(OutputStream os = con.getOutputStream()){
-                os.write(jsonInputString.getBytes());
+            RegisterDto registerInfo = new RegisterDto(username,password);
+            Optional<RegisterResponseDto> optRegisterResponse = HttpRequestUtility.httpPostRequest("http://localhost:9090/api/users/register",registerInfo,RegisterResponseDto.class);
+            if(!optRegisterResponse.isEmpty()){
+                RegisterResponseDto registerResponse = optRegisterResponse.get();
+                if(registerResponse.getErrorMessage().equals(null)){
+                    errorLabel.setText(registerResponse.getSuccessfulResponse());
+                    errorLabel.setVisible(true);
+                }else{
+                    errorLabel.setText(registerResponse.getErrorMessage());
+                    errorLabel.setVisible(true);
+                }
+            }else{
+               System.out.println("Unkown error occured"); 
             }
-            int responseCode = con.getResponseCode();
-            InputStream is = responseCode == 200 ? con.getInputStream():con.getErrorStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String responseBody = reader.lines().collect(Collectors.joining("\n"));
-            reader.close();
-            if (responseCode == 200){
-                System.out.println("Successful");
-                System.out.println(responseBody);
-            } else {
-                Type type = new TypeToken<Map<String,String>>(){}.getType();
-                Map<String,String> errorMap = gson.fromJson(responseBody,type);
-                errorLabel.setText(errorMap.get("error"));
-                errorLabel.setVisible(true);
-            } 
-            con.disconnect();
+            
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -97,7 +89,7 @@ public class ButtonPanel extends JPanel{
 
     public void login(){
         UserDto requestBody = new UserDto(username.getText(),new String(password.getText()));
-        Optional<LoginResponseDto> optResponse = HttpRequestUtility.httpPostRequest("http://localhost:9090/api/users/login",requestBody,LoginResponseDto.class,Optional.empty());
+        Optional<LoginResponseDto> optResponse = HttpRequestUtility.httpPostRequest("http://localhost:9090/api/users/login",requestBody,LoginResponseDto.class);
         if (!optResponse.isEmpty()){
             LoginResponseDto response = optResponse.get();
             if (response.getErrorMessage() == null){
@@ -105,7 +97,6 @@ public class ButtonPanel extends JPanel{
                 parent.add(new NotesPanel(response,parent),"NotesPanel");
                 cl.show(parent,"NotesPanel");
                 this.password.setText("");
-                System.out.println(response.getAccessToken() + "\n" + response.getRefreshToken());
             } else {
                 errorLabel.setText(response.getErrorMessage());
                 errorLabel.setVisible(true);
