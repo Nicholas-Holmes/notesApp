@@ -4,8 +4,11 @@ import java.awt.*;
 import java.lang.Thread;
 import java.net.HttpURLConnection; 
 import java.net.URL;
+import java.util.Optional;
 import java.io.OutputStream; 
 import com.google.gson.Gson;
+import com.nicholas.app.HttpRequestUtility;
+import com.nicholas.app.TextResponseDto;
 public class NotesDialog extends JDialog{
     private JTextField title;
     private JButton ok;
@@ -34,28 +37,13 @@ public class NotesDialog extends JDialog{
     }
     public void createNote(long id,String title,NotesListPanel notesList){
         new Thread(() ->{
-            try{
-                URL url = new URL("http://localhost:9090/api/notes/createNote");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Authorization","Bearer "+ response.getAccessToken());
-                conn.setRequestProperty("Content-Type","application/json; utf-8");
-                conn.setDoOutput(true);
-                NotesResponseDto note = new NotesResponseDto(id,"",title,null);
-                String json = gson.toJson(note);
-                try(OutputStream os = conn.getOutputStream()){
-                    os.write(json.getBytes());
-                }
-                int responseCode = conn.getResponseCode();
-                if (responseCode == 200){
-                    System.out.println("Success");
-                } else {
-                    System.out.println("error occured idk");
-                }
-                conn.disconnect();
-                notesList.populateList();
-            } catch(Exception e){
-                e.printStackTrace();
+
+            NotesResponseDto note = new NotesResponseDto(id,"",title,null);
+            Optional<TextResponseDto> optTextResponse = HttpRequestUtility.httpPostRequest("http://localhost:9090/api/notes/createNote",note,
+            TextResponseDto.class,response.getAccessToken());
+            if(!optTextResponse.isEmpty()){
+                TextResponseDto textResponse = optTextResponse.get();
+                System.out.println(textResponse.getText());
             }
         }).start();
     }
