@@ -9,7 +9,11 @@ public class TextResponseDto extends ErrorHolder{
         this.textResponse = textResponse;
     }
 
-    public String getText(){
+    public String getTextResponse(){
         return this.textResponse;
+    }
+
+    public void setTextResponse(String textResponse){
+        this.textResponse = textResponse; 
     }
 }
