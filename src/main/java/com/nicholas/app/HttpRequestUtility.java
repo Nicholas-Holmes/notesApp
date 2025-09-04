@@ -141,6 +141,7 @@ public class HttpRequestUtility{
             }
             int responseCode = conn.getResponseCode();
             String response = readResponse(conn,responseCode);
+            System.out.println(response);
             conn.disconnect();
             if(responseCode == 200){
                 return Optional.of(gson.fromJson(response,responseType));

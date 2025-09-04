@@ -43,7 +43,8 @@ public class NotesDialog extends JDialog{
             TextResponseDto.class,response.getAccessToken());
             if(!optTextResponse.isEmpty()){
                 TextResponseDto textResponse = optTextResponse.get();
-                System.out.println(textResponse.getText());
+                System.out.println(textResponse.getTextResponse());
+                notesList.populateList();
             }
         }).start();
     }
