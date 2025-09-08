@@ -3,7 +3,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import com.nicholas.app.frontEnd.UserInterface; 
+import com.nicholas.app.frontEnd.loginPage.UserInterface; 
 
 @Component 
 public class DisplayUI implements ApplicationListener<ApplicationReadyEvent>{
