@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import com.google.gson.reflect.TypeToken;
-import com.nicholas.app.frontEnd.ErrorHolder;
-import com.nicholas.app.frontEnd.NotesListPanel;
+import com.nicholas.app.dtoObjects.ErrorHolder;
+import com.nicholas.app.frontEnd.notesPage.NotesListPanel;
 
 import java.net.URL;
 import java.net.HttpURLConnection;
@@ -20,7 +20,7 @@ public class HttpRequestUtility{
     private static Gson gson = new Gson();
     private static final Type errorType = new TypeToken<Map<String,String>>(){}.getType();
 
-    public static <T> void HttpPutRequest(String stringUrl,String token,T requestBody){
+    public static <T, R extends ErrorHolder> Optional<R> HttpPutRequest(String stringUrl,String token,T requestBody, Class<R> responseType){
         try{
             URL url = new URL(stringUrl); 
             var conn = (HttpURLConnection) url.openConnection();
@@ -32,14 +32,18 @@ public class HttpRequestUtility{
             writeRequestBody(json,conn.getOutputStream());
             int responseCode = conn.getResponseCode();
             String responseBody = readResponse(conn,responseCode);
-            if (responseCode == 200){
-                System.out.println(responseBody);
-            } else {
-                System.out.println(parseError(responseBody));
-            }
             conn.disconnect();
+            if (responseCode == 200){
+                return Optional.of(gson.fromJson(responseBody,responseType));
+            } else {
+                String errorResponse = gson.fromJson(responseBody,errorType);
+                R response = responseType.getDeclaredConstructor().newInstance();
+                response.setErrorMessage(errorResponse);
+                return Optional.of(response);
+            }
         } catch (Exception e){
             e.printStackTrace();
+            return Optional.empty();
         }
     }
 
