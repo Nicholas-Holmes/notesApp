@@ -9,6 +9,7 @@ A simple full-stack notes application built with Java, Spring Boot, and a Swing-
 - Responsive Swing UI
 - Secure password handling
 - Exception handling with custom messages
+- JWT-based authentication for securing user sessions
 
 ## Tech Stack
 
@@ -17,6 +18,7 @@ A simple full-stack notes application built with Java, Spring Boot, and a Swing-
 - Maven
 - Swing (Java GUI)
 - JPA/Hibernate
+- JWT (JSON Web Tokens) for secure stateless authentication
 
 ## Getting Started
 
